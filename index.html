@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>拼图小游戏</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="hud">
+        <div class="hud-left">
+          <h1>拼图小游戏</h1>
+          <p class="meta">
+            第 <span id="levelLabel">1</span> 关 ·
+            <span id="levelTitle">日落湖畔</span> ·
+            <span id="gridLabel">2 x 2</span>
+          </p>
+        </div>
+        <div class="hud-center">
+          <div class="timer" id="timer">05:00</div>
+        </div>
+        <div class="hud-right">
+          <button type="button" id="restartBtn" class="btn">重新开始</button>
+        </div>
+      </header>
+
+      <main class="stage">
+        <section class="board-wrap">
+          <div id="board" class="board" aria-label="拼图板"></div>
+        </section>
+        <section class="tray-wrap">
+          <h2>待拼图块</h2>
+          <div id="tray" class="tray" aria-label="打乱的图块"></div>
+        </section>
+        <section class="tray-wrap">
+          <h2>待拼图块</h2>
+          <div id="tray" class="tray" aria-label="打乱的图块"></div>
+        </section>
+      </main>
+    </div>
+
+    <div id="previewOverlay" class="overlay hidden" aria-hidden="true">
+      <div id="previewBg" class="overlay-bg"></div>
+      <img id="previewImage" alt="原图预览" />
+      <div class="countdown">
+        <span id="countdown" class="countdown-number"></span>
+        <p id="previewHint" class="preview-hint">开始游戏前请记住图片的样子</p>
+      </div>
+    </div>
+
+    <div id="winOverlay" class="overlay hidden" aria-hidden="true">
+      <div id="winBg" class="overlay-bg"></div>
+      <div class="win-frame">
+        <img id="winImage" alt="复原后的原图" />
+        <div class="gold-glow"></div>
+    </div>
+
+    <div id="dialog" class="dialog hidden" role="dialog" aria-modal="true">
+      <div class="dialog-card">
+        <h2 id="dialogTitle">下一关</h2>
+        <p id="dialogMessage"></p>
+        <div class="dialog-actions">
+          <button type="button" id="dialogPrimary" class="btn btn-primary">确定</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="./config.js"></script>
+    <script src="./game.js"></script>
+  </body>
+</html>

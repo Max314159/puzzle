@@ -1,0 +1,528 @@
+:root {
+  --bg: #12141c;
+  --panel: #1c2030;
+  --line: #3a4158;
+  --text: #f4f1ea;
+  --muted: #b7b3a8;
+  --gold: #f4d27a;
+  --gold-deep: #c7922b;
+  --accent: #7eb6ff;
+  --danger: #ff7a7a;
+  --radius: 16px;
+  --stage-gap: clamp(10px, 1.6vmin, 18px);
+  --wrap-pad: clamp(10px, 1.6vmin, 16px);
+  --board-max-w: 860px;
+  /* 由脚本按实际可用高度覆盖，这里是脚本执行前的兜底值 */
+  --board-max-h: 58dvh;
+  --board-ratio: 4 / 3;
+  --board-ratio-num: 1.3333;
+  --piece-ratio: 4 / 3;
+  --piece-ratio-inv: 0.75;
+  /* 右侧图块区的列宽；--tray-columns 改成 2、3 可让图块多列排布 */
+  --tray-col-w: clamp(76px, 16vw, 150px);
+  --tray-columns: 1;
+  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(1200px 600px at 20% -10%, #2a2140 0%, transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, #1a2d44 0%, transparent 50%),
+    var(--bg);
+  color: var(--text);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overscroll-behavior-y: contain;
+}
+
+#app {
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: clamp(10px, 2vmin, 20px) clamp(10px, 2vmin, 20px)
+    calc(clamp(12px, 2.4vmin, 32px) + env(safe-area-inset-bottom, 0px));
+  padding-left: calc(clamp(10px, 2vmin, 20px) + env(safe-area-inset-left, 0px));
+  padding-right: calc(clamp(10px, 2vmin, 20px) + env(safe-area-inset-right, 0px));
+}
+
+.hud {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(8px, 1.4vw, 16px);
+  margin-bottom: var(--stage-gap);
+}
+
+.hud-left h1 {
+  margin: 0;
+  font-size: clamp(18px, 2.4vw, 28px);
+  letter-spacing: 0.04em;
+}
+
+.meta {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: clamp(12px, 1.4vw, 15px);
+}
+
+.hud-right {
+  text-align: right;
+}
+
+.timer {
+  min-width: clamp(96px, 12vw, 140px);
+  padding: clamp(4px, 0.8vmin, 8px) clamp(12px, 1.6vw, 18px);
+  border: 1px solid #5a4a22;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #2b2416, #1a160f);
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(20px, 3vw, 28px);
+  text-align: center;
+  box-shadow: 0 0 24px rgba(244, 210, 122, 0.15);
+}
+
+.timer.urgent {
+  color: var(--danger);
+  border-color: #7a3030;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid #5d657a;
+  background: #2a3144;
+  color: var(--text);
+  border-radius: 999px;
+  padding: clamp(7px, 1.2vmin, 10px) clamp(12px, 1.8vw, 18px);
+  font-size: clamp(13px, 1.5vw, 15px);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.btn:hover {
+  background: #35405a;
+}
+
+.btn-primary {
+  border-color: #8a6a22;
+  background: linear-gradient(180deg, #e8c56a, #b88828);
+  color: #2a1d07;
+  font-weight: 700;
+}
+
+.stage {
+  display: grid;
+  /* 拼图板在左，图块区固定在右侧一列 */
+  grid-template-columns: minmax(0, 1fr) var(--tray-col-w);
+  gap: var(--stage-gap);
+  align-items: stretch;
+}
+
+.board-wrap,
+.tray-wrap {
+  min-width: 0;
+  background: rgba(28, 32, 48, 0.86);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--wrap-pad);
+}
+
+.tray-wrap {
+  display: flex;
+  flex-direction: column;
+  /* 与拼图板等高，--board-h 由脚本按实际渲染高度写入 */
+  max-height: calc(var(--board-h, 60dvh) + var(--wrap-pad) * 2 + 2px);
+}
+
+.tray-wrap h2 {
+  margin: 0 0 clamp(6px, 1.2vmin, 12px);
+  /* 列宽较窄，标题不换行、超出用省略号 */
+  font-size: clamp(11px, 1.3vw, 16px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.board {
+  --cols: 2;
+  --rows: 2;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
+  /* 宽度同时受容器宽度、最大宽度和「可用高度 × 图片宽高比」三者约束，
+     保证整块拼图板始终完整落在屏幕内且不变形 */
+  width: min(
+    100%,
+    var(--board-max-w),
+    calc(var(--board-max-h) * var(--board-ratio-num))
+  );
+  margin: 0 auto;
+  aspect-ratio: var(--board-ratio);
+  background: #0c0e14;
+  border-radius: 12px;
+  overflow: hidden;
+  outline: 1px solid #2a3144;
+  /* 保留双指缩放，拖拽所需的手势拦截只放在 .piece 上 */
+  touch-action: manipulation;
+}
+
+.slot {
+  position: relative;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(45deg, #161922 25%, transparent 25%),
+    linear-gradient(-45deg, #161922 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #161922 75%),
+    linear-gradient(-45deg, transparent 75%, #161922 75%);
+  background-size: 18px 18px;
+  background-position: 0 0, 0 9px, 9px -9px, -9px 0;
+  background-color: #10131b;
+}
+
+.slot.drop-target {
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
+}
+
+.board.awaiting-place .slot {
+  cursor: pointer;
+}
+
+.board.awaiting-place .slot:not(:has(.piece)) {
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
+}
+
+.piece {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background-repeat: no-repeat;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.piece.selected {
+  box-shadow:
+    inset 0 0 0 3px #ffe08a,
+    0 0 0 2px #8a6a22;
+  outline: 3px solid #f4d27a;
+  outline-offset: -3px;
+}
+
+.piece:active,
+.piece.dragging {
+  cursor: grabbing;
+}
+
+.piece.ghost {
+  position: fixed;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0.95;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+.tray {
+  display: grid;
+  grid-template-columns: repeat(var(--tray-columns), minmax(0, 1fr));
+  gap: clamp(10px, 1.6vmin, 14px);
+  align-content: start;
+  /* 放不下时在图块区内部纵向滚动，不影响页面其它部分 */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* 预留滚动条位置，避免滚动条盖住小图右边缘 */
+  scrollbar-gutter: stable;
+  padding-right: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: #4a5470 transparent;
+}
+
+.tray::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tray::-webkit-scrollbar-thumb {
+  background: #4a5470;
+  border-radius: 3px;
+}
+
+.tray .piece-wrap {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-top: calc(100% * var(--piece-ratio-inv));
+  align-self: start;
+  border: 1px solid #333b52;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0c0e14;
+}
+
+.tray .piece {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  /* 去掉投影，避免相邻小图之间出现互相叠压的观感 */
+  box-shadow: none;
+  /* 图块区里允许纵向滑动来滚动列表，横向拖动仍然用于把图块拖到大图上 */
+  touch-action: pan-y;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: #000;
+  display: grid;
+  place-items: center;
+}
+
+.overlay.hidden,
+.dialog.hidden {
+  display: none;
+}
+
+.overlay img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* contain 保证任何屏幕比例下都能看到完整原图，不会裁掉边缘的拼图内容 */
+  object-fit: contain;
+}
+
+.win-frame img {
+  position: relation;
+  display: grid;
+  line-height: 0;
+}
+
+.win-frame img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100vw;
+  max-height: 100vh;
+  max-width: 100dvw;
+  max-height: 100dvh;
+}
+
+/* 用同一张图做模糊铺底，避免 contain 在异比例屏幕上留下黑边 */
+.overlay-bg {
+  osition: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  filter: blur(36px) brightness(0.55) saturate(1.1);
+  transform: scale(1.12);
+}
+
+#previewImage,
+#previewOverlay .overlay-bg {
+  filter: grayscale(1) contrast(1.05);
+}
+
+#previewOverlay .overlay-bg {
+  filter: grayscale(1) blur(36px) brightness(0.5);
+}
+
+.countdown {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(4px, 1.5vmin, 18px);
+  color: #fff;
+  text-shadow: 0 8px 40px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+}
+
+.countdown-number {
+  font-size: min(24vw, 200px);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.preview-hint {
+  margin: 0;
+  padding: 0 16px;
+  font-size: clamp(15px, 3.4vw, 30px);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.85);
+}
+
+.preview-hint:empty {
+  display: none;
+}
+
+.gold-glow {
+  position: absolute;
+  inset: 0;
+  padding: clamp(10px, 2.2vmin, 22px);
+  pointer-events: none;
+  filter: drop-shadow(0 0 18px rgba(255, 214, 110, 0.85));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.gold-glow::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 180vmax;
+  height: 180vmax;
+  transform: translate(-50%, -50%);
+  background: conic-gradient(
+    from 0deg,
+    #7a5200,
+    #ffe9a6,
+    #fff6d4,
+    #d4a017,
+    #fff1b0,
+    #8a5a00,
+    #ffe9a6,
+    #7a5200
+  );
+  animation: spin-glow 2.4s linear infinite;
+}
+
+.gold-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 40px rgba(255, 214, 110, 0.55);
+}
+
+.dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(8, 10, 16, 0.55);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.dialog-card {
+  width: min(420px, 100%);
+  max-height: calc(100dvh - 40px);
+  overflow: auto;
+  background: #1c2030;
+  border: 1px solid #8a6a22;
+  border-radius: 18px;
+  padding: clamp(16px, 2.4vmin, 24px);
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.45);
+}
+
+.dialog-card h2 {
+  margin: 0 0 8px;
+}
+
+.dialog-card p {
+  margin: 0 0 18px;
+  color: var(--muted);
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@keyframes pulse {
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes spin-glow {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* 竖屏窄屏：HUD 改为单列堆叠 */
+@media (max-width: 720px) {
+  .hud {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .hud-right,
+  .hud-center {
+    text-align: center;
+  }
+}
+
+/* 宽屏：整体放宽，图块列可以更宽一些 */
+@media (min-width: 1040px) {
+  #app {
+    max-width: 1500px;
+  }
+
+  :root {
+    --tray-col-w: clamp(120px, 14vw, 190px);
+  }
+}
+
+/* 矮屏：压缩 HUD，避免挤压拼图板 */
+@media (max-height: 640px) {
+  .hud {
+    margin-bottom: clamp(6px, 1vmin, 12px);
+  }
+
+  .hud-left h1 {
+    font-size: clamp(15px, 1.8vw, 20px);
+  }
+
+  .tray-wrap h2 {
+    margin-bottom: 6px;
+  }
+}
+
+/* 超小屏：收窄图块列，给拼图板留出更多宽度 */
+@media (max-width: 420px) {
+  :root {
+    --tray-col-w: clamp(64px, 19vw, 88px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timer.urgent,
+  .gold-glow::before {
+    animation: none;
+  }
+}
