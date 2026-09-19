@@ -14,6 +14,8 @@
       ? config.previewHint
       : "开始游戏前请记住图片的样子";
 
+  const winPraise = 
+    typeof config.winPraise === "string" ? config.winPraise : "真棒！";
   const appEl = document.getElementById("app");
   const boardEl = document.getElementById("board");
   const boardWrapEl = document.querySelector(".board-wrap");
@@ -31,6 +33,7 @@
   const winOverlay = document.getElementById("winOverlay");
   const winImage = document.getElementById("winImage");
   const winBg = document.getElementById("winBg");
+  const winPraiseEl = document.getElementById("winPraise");
   const dialog = document.getElementById("dialog");
   const dialogTitle = document.getElementById("dialogTitle");
   const dialogMessage = document.getElementById("dialogMessage");
@@ -126,6 +129,37 @@
     );
   }
 
+/*
+  function syncGlowToImage() {
+    if (!goldGlowEl || !winStage || winOverlay.classList.contains("hidden")) {
+      return;
+    }
+    const stage = winStage.getBoundingClientRect();
+    const box = winImage.getBoundingClientRect();
+    if (!box.width || !box.height) return;
+
+    let w = box.width;
+    let h = box.height;
+    // 万一元素框没能贴合图片（被拉伸后由 contain 留出黑边），按原图比例缩回真实画面
+    const natRatio = (image.naturalWidth || 4) / (image.naturalHeight || 3);
+    if (Math.abs(w / h - natRatio) > 0.01) {
+      if (w / h > natRatio) w = h * natRatio;
+      else h = w / natRatio;
+    }
+
+    const ring = Math.round(
+      Math.min(22, Math.max(8, Math.min(stage.width, stage.height) * 0.022))
+    );
+    const centerX = box.left + box.width / 2 - stage.left;
+    const centerY = box.top + box.height / 2 - stage.top;
+    goldGlowEl.style.padding = `${ring}px`;
+    goldGlowEl.style.width = `${w + ring * 2}px`;
+    goldGlowEl.style.height = `${h + ring * 2}px`;
+    goldGlowEl.style.left = `${centerX - w / 2 - ring}px`;
+    goldGlowEl.style.top = `${centerY - h / 2 - ring}px`;
+  }
+*/
+
   let lastMaxH = "";
   let lastBoardH = "";
 
@@ -155,6 +189,7 @@
       lastBoardH = boardH;
       root.setProperty("--board-h", boardH);
     }
+    //syncGlowToImage();
   }
 
   let layoutFrame = 0;
@@ -598,6 +633,8 @@
     clearTimers();
     winOverlay.classList.remove("hidden");
     winOverlay.setAttribute("aria-hidden", "false");
+    //syncGlowToImage();
+    //requestAnimationFrame(syncGlowToImage);
 
     const isLast = state.levelIndex >= levels.length - 1;
     state.winTimer = setTimeout(() => {
@@ -610,7 +647,7 @@
         const next = levels[state.levelIndex + 1];
         showDialog(
           "进入下一关",
-          `太棒了！下一关是 ${next.title || "新关卡"}，将切成 ${next.cols} × ${next.rows}。`,
+          `太棒了！下一关是 ${next.title || "新关卡"}`,
           "开始下一关",
           () => {
             hideOverlays();
@@ -641,6 +678,8 @@
 
   function boot() {
     if (previewHintEl) previewHintEl.textContent = previewHint;
+    if (winPraiseEl) winPraiseEl.textContent = winPraise;
+    winOverlay.classList.toggle("no-praise", !winPraise);
     watchViewportChanges();
     scheduleLayoutUpdate();
     startLevel(0);

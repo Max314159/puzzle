@@ -14,7 +14,7 @@
           <p class="meta">
             第 <span id="levelLabel">1</span> 关 ·
             <span id="levelTitle">日落湖畔</span> ·
-            <span id="gridLabel">2 x 2</span>
+            <span id="gridLabel"></span>
           </p>
         </div>
         <div class="hud-center">
@@ -29,12 +29,7 @@
         <section class="board-wrap">
           <div id="board" class="board" aria-label="拼图板"></div>
         </section>
-        <section class="tray-wrap">
-          <h2>待拼图块</h2>
-          <div id="tray" class="tray" aria-label="打乱的图块"></div>
-        </section>
-        <section class="tray-wrap">
-          <h2>待拼图块</h2>
+        <section class="tray-wrap" aria-label="待拼图块">
           <div id="tray" class="tray" aria-label="打乱的图块"></div>
         </section>
       </main>
@@ -51,9 +46,8 @@
 
     <div id="winOverlay" class="overlay hidden" aria-hidden="true">
       <div id="winBg" class="overlay-bg"></div>
-      <div class="win-frame">
-        <img id="winImage" alt="复原后的原图" />
-        <div class="gold-glow"></div>
+      <p id="winPraise" class="win-praise">真棒！</p>
+      <img id="winImage" alt="复原后的原图" />
     </div>
 
     <div id="dialog" class="dialog hidden" role="dialog" aria-modal="true">

@@ -8,6 +8,7 @@
   --gold-deep: #c7922b;
   --accent: #7eb6ff;
   --danger: #ff7a7a;
+  --praise-h: clamp(44px, 12vw, 92px);
   --radius: 16px;
   --stage-gap: clamp(10px, 1.6vmin, 18px);
   --wrap-pad: clamp(10px, 1.6vmin, 16px);
@@ -151,9 +152,9 @@ body {
   margin: 0 0 clamp(6px, 1.2vmin, 12px);
   /* 列宽较窄，标题不换行、超出用省略号 */
   font-size: clamp(11px, 1.3vw, 16px);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.25;
+  text-align: center;
+  overflow-wrap: anywhere;
   color: var(--muted);
   font-weight: 600;
 }
@@ -295,8 +296,6 @@ body {
   inset: 0;
   z-index: 20;
   background: #000;
-  display: grid;
-  place-items: center;
 }
 
 .overlay.hidden,
@@ -305,32 +304,48 @@ body {
 }
 
 .overlay img {
-  position: relative;
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   /* contain 保证任何屏幕比例下都能看到完整原图，不会裁掉边缘的拼图内容 */
   object-fit: contain;
 }
 
-.win-frame img {
-  position: relation;
-  display: grid;
-  line-height: 0;
+#winOverlay .win-praise {
+  position: absolute;
+  top: 0;
+  top: env(safe-area-inset-top, 0px);
+  left: 0;
+  right: 0;
+  z-index: 1;
+  margin: 0;
+  height: var(--praise-h);
+  padding: 0 16px;
+  color: #fff;
+  font-size: clamp(26px, 7.5vw, 52px);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: var(--praise-h);
+  text-shadow: 0 4px 25px rgba(0,0,0,0.85);
 }
 
-.win-frame img {
-  display: block;
-  width: auto;
-  height: auto;
-  max-width: 100vw;
-  max-height: 100vh;
-  max-width: 100dvw;
-  max-height: 100dvh;
+#winOverlay img {
+  padding-top: var(--praise-h);
+  padding-top: calc(var(--praise-h) + env(safe-area-inset-top, 0px));
+}
+
+.win-praise.no-praise .win-praise {
+  display: none;
+}
+
+#winOverlay.no-praise img {
+  padding-top: 0; 
 }
 
 /* 用同一张图做模糊铺底，避免 contain 在异比例屏幕上留下黑边 */
 .overlay-bg {
-  osition: absolute;
+  position: absolute;
   inset: 0;
   background-position: center;
   background-size: cover;
@@ -381,51 +396,6 @@ body {
   display: none;
 }
 
-.gold-glow {
-  position: absolute;
-  inset: 0;
-  padding: clamp(10px, 2.2vmin, 22px);
-  pointer-events: none;
-  filter: drop-shadow(0 0 18px rgba(255, 214, 110, 0.85));
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  mask-composite: exclude;
-}
-
-.gold-glow::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 180vmax;
-  height: 180vmax;
-  transform: translate(-50%, -50%);
-  background: conic-gradient(
-    from 0deg,
-    #7a5200,
-    #ffe9a6,
-    #fff6d4,
-    #d4a017,
-    #fff1b0,
-    #8a5a00,
-    #ffe9a6,
-    #7a5200
-  );
-  animation: spin-glow 2.4s linear infinite;
-}
-
-.gold-glow::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  box-shadow: inset 0 0 40px rgba(255, 214, 110, 0.55);
-}
-
 .dialog {
   position: fixed;
   inset: 0;
@@ -467,12 +437,6 @@ body {
   }
 }
 
-@keyframes spin-glow {
-  to {
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
-}
-
 /* 竖屏窄屏：HUD 改为单列堆叠 */
 @media (max-width: 720px) {
   .hud {
@@ -507,10 +471,6 @@ body {
   .hud-left h1 {
     font-size: clamp(15px, 1.8vw, 20px);
   }
-
-  .tray-wrap h2 {
-    margin-bottom: 6px;
-  }
 }
 
 /* 超小屏：收窄图块列，给拼图板留出更多宽度 */
@@ -521,8 +481,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .timer.urgent,
-  .gold-glow::before {
+  .timer.urgent {
     animation: none;
   }
 }

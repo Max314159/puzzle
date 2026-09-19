@@ -12,6 +12,7 @@ window.PUZZLE_CONFIG = {
   previewMs: 2000,
   countdownFrom: 3,
   previewHint: "开始游戏前请记住图片的样子",
+  winPraise: "真棒！",
   nextLevelDelayMs: 3000,
   fallbackImageSrc: "./assets/puzzle.svg",
   levels: [
